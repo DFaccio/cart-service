@@ -1,5 +1,6 @@
-package com.cart_service.interfaceadapters.presenters.dto;
+package com.cart_service.interfaceadapters.presenters.dto.cart;
 
+import com.cart_service.interfaceadapters.presenters.dto.Dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,16 +14,10 @@ import java.io.Serializable;
 @Getter
 @Setter
 @JsonIgnoreProperties({"id"})
-public class ProductDetailsDto extends Dto implements Serializable {
+public class ProductReservationDto extends Dto implements Serializable {
 
-    String sku;
+    String reservationId;
 
-    String name;
-
-    double price;
-
-    int quantity;
-
-    double total;
+    ProductDetailsDto productDetailsDto;
 
 }

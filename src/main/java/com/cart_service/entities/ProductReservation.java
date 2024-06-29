@@ -11,16 +11,10 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDetails implements Serializable {
+public class ProductReservation implements Serializable {
 
-    private String sku;
+    private String reservationId;
 
-    private String name;
-
-    private double price;
-
-    private int quantity;
-
-    private double total;
+    private ProductDetails productDetails;
 
 }

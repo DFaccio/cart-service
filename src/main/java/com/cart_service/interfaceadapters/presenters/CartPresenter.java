@@ -1,34 +1,32 @@
 package com.cart_service.interfaceadapters.presenters;
 
 import com.cart_service.entities.Cart;
-import com.cart_service.interfaceadapters.presenters.dto.CartDto;
+import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
 import jakarta.annotation.Resource;
-import org.springframework.security.oauth2.client.endpoint.WebClientReactiveAuthorizationCodeTokenResponseClient;
 
 import java.util.stream.Collectors;
 
 public class CartPresenter implements Presenter<Cart, CartDto>{
 
     @Resource
-    private ProductDetailsPresenter productDetailsPresenter;
+    private ProductReservationPresenter productReservationPresenter;
 
     @Override
     public CartDto convert(Cart document){
 
         CartDto cartDto = new CartDto();
 
-        cartDto.setCartId(document.getCartId());
+        cartDto.setId(document.getId());
         cartDto.setCostumerId(document.getCostumerId());
-        cartDto.setProductDetailsDto(document.getProductDetails()
+        cartDto.setProductReservationDto(document.getProductReservation()
                 .stream()
-                .map(productDetails -> productDetailsPresenter.convert(productDetails))
+                .map(productReservation -> productReservationPresenter.convert(productReservation))
                 .collect(Collectors.toList()));
         cartDto.setProductsQuantity(document.getProductsQuantity());
         cartDto.setCartValue(document.getCartValue());
         cartDto.setCreationDate(document.getCreationDate());
         cartDto.setUpdateDate(document.getUpdateDate());
         cartDto.setStatus(document.getStatus());
-
 
         return cartDto;
 
@@ -39,11 +37,11 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
 
         Cart cart = new Cart();
 
-        cart.setCartId(dto.getCartId());
+        cart.setId(dto.getId());
         cart.setCostumerId(dto.getCostumerId());
-        cart.setProductDetails(dto.getProductDetailsDto()
+        cart.setProductReservation(dto.getProductReservationDto()
                 .stream()
-                .map(productDetails -> productDetailsPresenter.convert(productDetails))
+                .map(productReservationDto -> productReservationPresenter.convert(productReservationDto))
                 .collect(Collectors.toList()));
         cart.setProductsQuantity(dto.getProductsQuantity());
         cart.setCartValue(dto.getCartValue());

@@ -18,20 +18,20 @@ import java.util.List;
 @AllArgsConstructor
 public class Cart implements Serializable {
 
-    String cartId;
+    private String Id;
 
-    String costumerId;
+    private String costumerId;
 
-    List<ProductDetails> productDetails;
+    private List<ProductReservation> productReservation;
 
-    int productsQuantity;
+    private int productsQuantity;
 
-    double cartValue;
+    private double cartValue;
 
-    LocalDateTime creationDate;
+    private LocalDateTime creationDate;
 
-    LocalDateTime updateDate;
+    private LocalDateTime updateDate;
 
-    CartStatus status;
+    private CartStatus status;
 
 }
