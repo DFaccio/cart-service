@@ -59,7 +59,8 @@ public class CartController {
 
         cart = cartGateway.save(cart);
 
-        return Mono.fromCallable(() -> cartPresenter.convert(cart));
+        Cart finalCart = cart;
+        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
 
     }
 
