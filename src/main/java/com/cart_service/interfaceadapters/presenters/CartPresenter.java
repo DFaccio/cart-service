@@ -3,9 +3,11 @@ package com.cart_service.interfaceadapters.presenters;
 import com.cart_service.entities.Cart;
 import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
 import jakarta.annotation.Resource;
+import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
+@Component
 public class CartPresenter implements Presenter<Cart, CartDto>{
 
     @Resource

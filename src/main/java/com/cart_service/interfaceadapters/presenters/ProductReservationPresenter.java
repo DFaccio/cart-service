@@ -3,7 +3,9 @@ package com.cart_service.interfaceadapters.presenters;
 import com.cart_service.entities.ProductReservation;
 import com.cart_service.interfaceadapters.presenters.dto.cart.ProductReservationDto;
 import jakarta.annotation.Resource;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductReservationPresenter implements Presenter<ProductReservation, ProductReservationDto>{
 
     @Resource

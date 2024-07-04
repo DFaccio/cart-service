@@ -2,7 +2,9 @@ package com.cart_service.interfaceadapters.presenters;
 
 import com.cart_service.entities.ProductDetails;
 import com.cart_service.interfaceadapters.presenters.dto.cart.ProductDetailsDto;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductDetailsPresenter implements Presenter<ProductDetails, ProductDetailsDto>{
 
     @Override

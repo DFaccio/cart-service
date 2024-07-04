@@ -17,7 +17,7 @@ public class SwaggerConfig {
                                 .title("Microsserviço para controle de carrinho de compras")
                                 .description("APIs para criação e manipulação de carrinho de compras")
                                 .version("1.0.0")
-                ).addServersItem(new Server().url("http://localhost:7071/order-management-system/cart-microservice"))
+                ).addServersItem(new Server().url("http://localhost:7071/ecommerce-system/cart-microservice"))
                 .addServersItem(new Server().url("http://localhost:7077"));
     }
 }

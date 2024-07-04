@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping(value = "/cart/v1/")
+@RequestMapping(value = "/api/v1/cart")
 @Tag(name = "Carrinho", description = "Cria, atualiza e manipula carrinhos de compra")
 public class CartWeb {
 
