@@ -27,4 +27,10 @@ public class CartGateway {
 
     }
 
+    public Cart findById(String id){
+
+        return cartRepository.findById(id).block();
+
+    }
+
 }

@@ -23,7 +23,7 @@ public class ProductDto extends Dto implements Serializable {
     @JsonProperty("value")
     private double value;
 
-    @JsonProperty("categoryInformation")
+    @JsonProperty("category_information")
     private CategoryInformationDto categoryInformationDto;
 
 }

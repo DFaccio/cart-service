@@ -64,6 +64,14 @@ public class CartController {
 
     }
 
+    public Mono<CartDto> get(String id){
+
+        Cart cart = cartGateway.findById(id);
+
+        return Mono.fromCallable(() ->cartPresenter.convert(cart));
+
+    }
+
     public CartDto update(){
 
 //        TODO - chama business/helper para ver se houve remoção de quantidade,
@@ -76,13 +84,11 @@ public class CartController {
 
     public CartDto confirm(){
 
-
         return null;
 
     }
 
     public CartDto cancel(){
-
 
         return null;
 
