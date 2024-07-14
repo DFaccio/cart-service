@@ -23,4 +23,6 @@ public class ProductDetails implements Serializable {
 
     private double total;
 
+    private String status;
+
 }

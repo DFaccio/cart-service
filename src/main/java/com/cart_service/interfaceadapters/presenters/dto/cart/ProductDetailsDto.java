@@ -26,4 +26,6 @@ public class ProductDetailsDto extends Dto implements Serializable {
 
     private double total;
 
+    private String status;
+
 }

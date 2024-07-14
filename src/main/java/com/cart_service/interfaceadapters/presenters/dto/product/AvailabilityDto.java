@@ -20,7 +20,4 @@ public class AvailabilityDto extends Dto implements Serializable {
     @JsonProperty("sku")
     private String sku;
 
-    @JsonProperty("quantity")
-    private Integer quantity;
-
 }

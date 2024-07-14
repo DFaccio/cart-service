@@ -17,6 +17,7 @@ public class ProductDetailsPresenter implements Presenter<ProductDetails, Produc
         productDetailsDto.setPrice(document.getPrice());
         productDetailsDto.setQuantity(document.getQuantity());
         productDetailsDto.setTotal(document.getTotal());
+        productDetailsDto.setStatus(document.getStatus());
 
         return productDetailsDto;
 
@@ -32,6 +33,7 @@ public class ProductDetailsPresenter implements Presenter<ProductDetails, Produc
         productDetails.setPrice(dto.getPrice());
         productDetails.setQuantity(dto.getQuantity());
         productDetails.setTotal(dto.getTotal());
+        productDetails.setStatus(dto.getStatus());
 
         return productDetails;
 

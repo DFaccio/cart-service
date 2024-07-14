@@ -26,5 +26,4 @@ public class CategoryInformationDto extends Dto implements Serializable {
     @JsonProperty("availability")
     private AvailabilityDto availabilityDto;
 
-
 }

@@ -16,8 +16,6 @@ public class CartDto extends Dto implements Serializable {
 
     private String costumerId;
 
-    private List<ProductReservationDto> productReservationDto;
-
     private int productsQuantity;
 
     private double cartValue;
@@ -27,5 +25,7 @@ public class CartDto extends Dto implements Serializable {
     private LocalDateTime updateDate;
 
     private CartStatus status;
+
+    private List<ProductReservationDto> productReservationDto;
 
 }
