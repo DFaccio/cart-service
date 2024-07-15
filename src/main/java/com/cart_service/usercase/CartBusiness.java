@@ -12,6 +12,7 @@ import com.cart_service.util.enums.ReservationStatus;
 import com.cart_service.util.exceptions.ValidationsException;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.SpringBootExceptionReporter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -29,11 +30,11 @@ public class CartBusiness {
 
         Cart cart;
 
-        if(optional.isPresent()) {
+        if (optional.isPresent()) {
 
-            cart = updateCart(optional.get(), reservationDto);
+            cart = addProduct(optional.get(), reservationDto);
 
-        }else{
+        } else {
 
             cart = createCart(costumertId, reservationDto);
 
@@ -52,7 +53,7 @@ public class CartBusiness {
 
         boolean hasReservation = false;
 
-        for(ReservationDto reservationDto : reservationListDto.getReservationDto()) {
+        for (ReservationDto reservationDto : reservationListDto.getReservationDto()) {
 
             ProductDetails productDetails = new ProductDetails();
             ProductReservation productReservation = new ProductReservation();
@@ -61,21 +62,22 @@ public class CartBusiness {
 
             int quantity = reservationDto.getQuantity();
             double productValue = productDto.getValue();
+            String reservationStatus = reservationDto.getStatus();
 
             productDetails.setSku(productDto.getCategoryInformationDto().getAvailabilityDto().getSku());
             productDetails.setName(productDto.getCategoryInformationDto().getName());
             productDetails.setPrice(productValue);
             productDetails.setQuantity(quantity);
-            productDetails.setStatus(reservationDto.getStatus());
+            productDetails.setStatus(reservationStatus);
 
-            if(StringUtils.equals(reservationDto.getStatus(), ReservationStatus.READY.toString())) {
+            if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
 
                 hasReservation = true;
 
                 productReservation.setReservationId(reservationDto.getId());
                 productDetails.setTotal(calculateProductValue(quantity, productValue));
 
-            }else if(StringUtils.equals(reservationDto.getStatus(), ReservationStatus.STOCKOUT.toString())){
+            } else if (StringUtils.equals(reservationStatus, ReservationStatus.STOCKOUT.toString())) {
 
                 productDetails.setTotal(0);
 
@@ -86,7 +88,7 @@ public class CartBusiness {
 
         }
 
-        if(hasReservation) {
+        if (hasReservation) {
 
             cart.setProductReservation(productReservationList);
             cart.setCostumerId(costumertId);
@@ -96,7 +98,7 @@ public class CartBusiness {
             cart.setUpdateDate(LocalDateTime.now());
             cart.setStatus(CartStatus.CREATED);
 
-        }else{
+        } else {
 
             throw new ValidationsException("0100");
 
@@ -106,66 +108,136 @@ public class CartBusiness {
 
     }
 
-    public Cart updateCart(Cart cart, ReservationListDto reservationDto){
+    public Cart addProduct(Cart cart, ReservationListDto reservationListDto) throws ValidationsException {
 
-//    TODO - varrer lista do carrinho, se encontrar o sku
-//        se for quantidade > 0, atualiza quantidade e valor.
-//        se for quantidade = 0, remover a ocorrência do sku
-//        se não encontrar, adiciona o novo sku
-//        no final, recalcular quantidade e valor totais do carrinho
-
-        String sku = reservationDto.getSku();
-
-        boolean skuAlreadyInCart = false;
+        List<ReservationDto> reservations = reservationListDto.getReservationDto();
 
         List<ProductReservation> productReservationList = cart.getProductReservation();
+        List<ReservationDto> reservationsToMake = new ArrayList<>();
 
-        for(ProductReservation productReservation : productReservationList){
+        boolean makeReservation = false;
 
-            if(StringUtils.equals(productReservation.getProductDetails().getSku(), sku)){
+        for (ProductReservation productReservation : productReservationList) {
 
-                skuAlreadyInCart = true;
+            String cartSku = productReservation.getProductDetails().getSku();
 
-                reservationDto.setId(productReservation.getReservationId());
+            for (ReservationDto reservationDto : reservations) {
 
-//                reservationDto = productService.updateReservation(reservationDto).block();
+                String sku = reservationDto.getSku();
 
-                if(reservationDto.getQuantity() == 0 ){
-                    productReservationList.remove(productReservation);
+                if (StringUtils.equals(cartSku, sku)) {
+
+                    ProductDetails productDetails = productReservation.getProductDetails();
+
+                    reservationDto.setId(productReservation.getReservationId());
+
+                    int quantity = productReservation.getProductDetails().getQuantity() + reservationDto.getQuantity();
+                    double productValue = productReservation.getProductDetails().getPrice();
+
+                    reservationDto.setQuantity(quantity);
+
+                    reservationDto = cartHelper.updateReservation(reservationDto);
+
+                    String reservationStatus = reservationDto.getStatus();
+
+                    productDetails.setStatus(reservationStatus);
+
+                    if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+
+                        productDetails.setQuantity(quantity);
+                        productDetails.setTotal(calculateProductValue(quantity, productValue));
+
+                    }
+
+                    productReservation.setProductDetails(productDetails);
+
+                } else {
+
+                    makeReservation = true;
+                    reservationsToMake.add(reservationDto);
+
                 }
+
             }
 
         }
 
-        return null;
+        if (makeReservation) {
 
-    }
+            ReservationListDto makeReservationList = new ReservationListDto();
+            makeReservationList.setReservationDto(reservationsToMake);
 
-    public List<String> reservationIds(Cart cart){
+            makeReservationList = cartHelper.createReservation(makeReservationList);
 
-        List<String> reservationIds = new ArrayList<>();
+            for (ReservationDto reservationDto : makeReservationList.getReservationDto()) {
 
-        List<ProductReservation> productReservationList = cart.getProductReservation();
+                ProductDetails productDetails = new ProductDetails();
+                ProductReservation productReservation = new ProductReservation();
 
-        for(ProductReservation productReservation : productReservationList){
+                ProductDto productDto = cartHelper.getProduct(reservationDto.getSku());
 
-                reservationIds.add(productReservation.getReservationId());
+                int quantity = reservationDto.getQuantity();
+                double productValue = productDto.getValue();
+                String reservationStatus = reservationDto.getStatus();
+
+                productDetails.setSku(productDto.getCategoryInformationDto().getAvailabilityDto().getSku());
+                productDetails.setName(productDto.getCategoryInformationDto().getName());
+                productDetails.setPrice(productValue);
+                productDetails.setQuantity(quantity);
+                productDetails.setStatus(reservationStatus);
+
+                if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+
+                    productReservation.setReservationId(reservationDto.getId());
+                    productDetails.setTotal(calculateProductValue(quantity, productValue));
+
+                } else if (StringUtils.equals(reservationStatus, ReservationStatus.STOCKOUT.toString())) {
+
+                    productDetails.setTotal(0);
+
+                }
+
+                productReservation.setProductDetails(productDetails);
+                productReservationList.add(productReservation);
 
             }
 
-        return reservationIds;
+        }
 
-    }
-
-    public Cart confirm(Cart cart){
-
-        cart.setStatus(CartStatus.CONFIRMED);
+        cart.setProductReservation(productReservationList);
+        cart.setProductsQuantity(calculateProductsQuantity(productReservationList));
+        cart.setCartValue(calculateCartValue(productReservationList));
+        cart.setUpdateDate(LocalDateTime.now());
 
         return cart;
 
     }
 
-    public Cart cancel(Cart cart){
+    public List<String> reservationIds(Cart cart) {
+
+        List<String> reservationIds = new ArrayList<>();
+
+        List<ProductReservation> productReservationList = cart.getProductReservation();
+
+        for (ProductReservation productReservation : productReservationList) {
+
+            reservationIds.add(productReservation.getReservationId());
+
+        }
+
+        return reservationIds;
+
+    }
+
+    public Cart confirm(Cart cart) {
+
+        cart.setStatus(CartStatus.FINISHED);
+
+        return cart;
+
+    }
+
+    public Cart cancel(Cart cart) {
 
         cart.setStatus(CartStatus.CANCELLED);
 
@@ -173,34 +245,35 @@ public class CartBusiness {
 
     }
 
-    public boolean skuAlreadyInCart(Cart cart, String sku){
+//    public boolean skuAlreadyInCart(Cart cart, String sku) {
+//
+//        List<ProductReservation> productReservationList = cart.getProductReservation();
+//
+//        for (ProductReservation productReservation : productReservationList) {
+//
+//            if (StringUtils.equals(productReservation.getProductDetails().getSku(), sku)) {
+//
+//                return true;
+//
+//            }
+//
+//        }
+//
+//        return false;
+//
+//    }
 
-        List<ProductReservation> productReservationList = cart.getProductReservation();
-
-        for(ProductReservation productReservation : productReservationList){
-
-            if(StringUtils.equals(productReservation.getProductDetails().getSku(), sku)){
-
-                return true;
-
-            }
-
-        }
-
-        return false;
-
-    }
-    private double calculateProductValue(int quantity, double value){
+    private double calculateProductValue(int quantity, double value) {
 
         return quantity * value;
 
     }
 
-    private int calculateProductsQuantity(List<ProductReservation> productReservationList){
+    private int calculateProductsQuantity(List<ProductReservation> productReservationList) {
 
         int quantity = 0;
 
-        for(ProductReservation productReservation : productReservationList){
+        for (ProductReservation productReservation : productReservationList) {
 
             quantity += productReservation.getProductDetails().getQuantity();
 
@@ -210,11 +283,11 @@ public class CartBusiness {
 
     }
 
-    private double calculateCartValue(List<ProductReservation> productReservationList){
+    private double calculateCartValue(List<ProductReservation> productReservationList) {
 
         double value = 0;
 
-        for(ProductReservation productReservation : productReservationList){
+        for (ProductReservation productReservation : productReservationList) {
 
             value += productReservation.getProductDetails().getTotal();
 
@@ -223,4 +296,5 @@ public class CartBusiness {
         return value;
 
     }
+
 }

@@ -39,7 +39,7 @@ public class CartWeb {
         return cartController.getCart(id);
 
     }
-    @Operation(summary = "Consulta um carrinho")
+    @Operation(summary = "Finaliza um carrinho")
     @PutMapping(value = "/confirm/{id}", consumes = "application/json")
     public Mono<CartDto> confirm(@PathVariable String id){
 
@@ -47,7 +47,7 @@ public class CartWeb {
 
     }
 
-    @Operation(summary = "Consulta um carrinho")
+    @Operation(summary = "Cancela um carrinho")
     @PutMapping(value = "/cancel/{id}", consumes = "application/json")
     public Mono<CartDto> cancel(@PathVariable String id){
 

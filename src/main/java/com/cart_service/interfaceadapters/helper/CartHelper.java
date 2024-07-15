@@ -26,4 +26,10 @@ public class CartHelper {
 
     }
 
+    public ReservationDto updateReservation(ReservationDto reservationDto){
+
+        return productService.updateReservation(reservationDto);
+
+    }
+
 }

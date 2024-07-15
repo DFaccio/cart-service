@@ -14,7 +14,7 @@ public interface ProductService {
 
     ReservationListDto createReservation(ReservationListDto reservationDto);
 
-    Mono<ReservationDto> updateReservation(ReservationDto reservationDto);
+    ReservationDto updateReservation(ReservationDto reservationDto);
 
     void confirmReservation(List<String> reservationIds);
 

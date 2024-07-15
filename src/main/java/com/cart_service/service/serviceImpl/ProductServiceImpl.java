@@ -62,15 +62,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Mono<ReservationDto> updateReservation(ReservationDto reservationDto){
+    public ReservationDto updateReservation(ReservationDto reservationDto){
 
-        return webClient
+        return (ReservationDto) webClient
                 .put()
                 .uri(String.format(RESERVATION_SERVICE_URI, "/id/",reservationDto.getId(), "/quantity/", reservationDto.getQuantity()))
                 .header("Authorization", "Bearer "+("admin@email.com"))
                 .body(reservationDto, ReservationDto.class)
-                .retrieve()
-                .bodyToMono(ReservationDto.class);
+                .retrieve();
 
     }
 

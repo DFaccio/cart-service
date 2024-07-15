@@ -38,39 +38,6 @@ public class CartController {
 
         Cart cart = cartBusiness.addProductToCart(optional, costumertId, reservationDto);
 
-//        if(optional.isPresent()){
-
-//            cart = cartBusiness.update(optional.get(), reservationDto);
-//
-//            if(cartBusiness.skuAlreadyInCart(optional.get(), sku)) {
-//            TODO chama método que verifica se o SKU já existe no carrinho
-//             se existe, calcula a nova quantidade e faz o putReservation (/id/{id}/quantity/{quantity})
-//             se não existe, chama o postReservation
-//
-//                reservationDto = productService.putReservation(dto).block();
-//
-//                productDto = getProduct(sku);
-//
-//
-//            }else{
-//
-//                reservationDto = productService.createReservation(dto).block();
-//
-//                productDto = getProduct(sku);
-//
-//                cart = cartBusiness.update(optional.get(), reservationDto, productDto);
-//
-//            }
-//        }else{
-
-//            reservationDto = productService.createReservation(reservationDto);
-
-//            productDto = getProduct(sku);
-
-//            cart = cartBusiness.create(costumertId, reservationDto, productDto);
-
-//        }
-
         cart = cartGateway.save(cart);
 
         Cart finalCart = cart;
