@@ -4,6 +4,8 @@ import com.cart_service.entities.Cart;
 import com.cart_service.entities.ProductDetails;
 import com.cart_service.entities.ProductReservation;
 import com.cart_service.interfaceadapters.helper.CartHelper;
+import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
+import com.cart_service.interfaceadapters.presenters.dto.cart.ProductReservationDto;
 import com.cart_service.interfaceadapters.presenters.dto.product.ProductDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
@@ -12,7 +14,6 @@ import com.cart_service.util.enums.ReservationStatus;
 import com.cart_service.util.exceptions.ValidationsException;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.SpringBootExceptionReporter;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -213,6 +214,69 @@ public class CartBusiness {
 
     }
 
+    public Cart updateCart(CartDto cartDto, Cart cart){
+
+        List<ProductReservation> reservedProductsList = cart.getProductReservation();
+        List<ProductReservationDto> updateProductsList = cartDto.getProductReservationDto();
+
+        for (ProductReservation productReservation : reservedProductsList) {
+
+            String reservedSku = productReservation.getProductDetails().getSku();
+            int reservedQuantity = productReservation.getProductDetails().getQuantity();
+
+            for (ProductReservationDto updateProducts : updateProductsList) {
+
+                String updatedSku = updateProducts.getProductDetailsDto().getSku();
+                int updateQuantity = updateProducts.getProductDetailsDto().getQuantity();
+
+                if (StringUtils.equals(reservedSku, updatedSku) || reservedQuantity != updateQuantity) {
+
+                    ReservationDto reservationDto = new ReservationDto();
+                    ProductDetails productDetails = productReservation.getProductDetails();
+
+                    double productValue = productReservation.getProductDetails().getPrice();
+
+                    reservationDto.setQuantity(updateQuantity);
+                    reservationDto.setId(productReservation.getReservationId());
+
+                    reservationDto = cartHelper.updateReservation(reservationDto);
+
+                    String reservationStatus = reservationDto.getStatus();
+
+                    if(updateQuantity == 0){
+
+                        productDetails.setStatus(ReservationStatus.CANCELED.toString());
+                        productDetails.setQuantity(updateQuantity);
+
+                    }else{
+
+                        productDetails.setStatus(reservationStatus);
+
+                    }
+
+                    if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+
+                        productDetails.setQuantity(updateQuantity);
+                        productDetails.setTotal(calculateProductValue(updateQuantity, productValue));
+
+                    }
+
+                    productReservation.setProductDetails(productDetails);
+
+                }
+
+            }
+
+        }
+
+        cart.setProductReservation(reservedProductsList);
+        cart.setProductsQuantity(calculateProductsQuantity(reservedProductsList));
+        cart.setCartValue(calculateCartValue(reservedProductsList));
+        cart.setUpdateDate(LocalDateTime.now());
+
+        return cart;
+    }
+
     public List<String> reservationIds(Cart cart) {
 
         List<String> reservationIds = new ArrayList<>();
@@ -244,24 +308,6 @@ public class CartBusiness {
         return cart;
 
     }
-
-//    public boolean skuAlreadyInCart(Cart cart, String sku) {
-//
-//        List<ProductReservation> productReservationList = cart.getProductReservation();
-//
-//        for (ProductReservation productReservation : productReservationList) {
-//
-//            if (StringUtils.equals(productReservation.getProductDetails().getSku(), sku)) {
-//
-//                return true;
-//
-//            }
-//
-//        }
-//
-//        return false;
-//
-//    }
 
     private double calculateProductValue(int quantity, double value) {
 

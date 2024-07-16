@@ -6,7 +6,6 @@ import com.cart_service.interfaceadapters.presenters.dto.reservation.Reservation
 import com.cart_service.service.ProductService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 
 @Component
 public class CartHelper {

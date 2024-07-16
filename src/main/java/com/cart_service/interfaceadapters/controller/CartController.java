@@ -13,7 +13,6 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,23 +49,27 @@ public class CartController {
 
         Cart cart = cartGateway.findById(id);
 
-        return Mono.fromCallable(() ->cartPresenter.convert(cart));
+        return Mono.fromCallable(() -> cartPresenter.convert(cart));
 
     }
 
-    public CartDto updateCart(){
+    public Mono<CartDto> updateCart(CartDto cartDto){
 
-//        TODO - chama business/helper para ver se houve remoção de quantidade,
-//         monta reservationdto e chama serviço de reserva
-//         /products/reservation/update enviar com quantidade 0 para cancelar reserva
+        Cart cart = cartGateway.findById(cartDto.getId());
 
-        return null;
+        cart = cartBusiness.updateCart(cartDto, cart);
+
+        cart = cartGateway.save(cart);
+
+        Cart finalCart = cart;
+
+        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
 
     }
 
     public Mono<CartDto> confirm(String cartId){
 
-        List<String> reservationIds = new ArrayList<>();
+        List<String> reservationIds;
 
         Cart cart = cartGateway.findById(cartId);
 
@@ -80,13 +83,13 @@ public class CartController {
 
         Cart finalCart = cart;
 
-        return Mono.fromCallable(() ->cartPresenter.convert(finalCart));
+        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
 
     }
 
     public Mono<CartDto> cancel(String cartId){
 
-        List<String> reservationIds = new ArrayList<>();
+        List<String> reservationIds;
 
         Cart cart = cartGateway.findById(cartId);
 
@@ -100,7 +103,7 @@ public class CartController {
 
         Cart finalCart = cart;
 
-        return Mono.fromCallable(() ->cartPresenter.convert(finalCart));
+        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
 
     }
 
