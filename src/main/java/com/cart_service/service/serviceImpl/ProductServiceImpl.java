@@ -4,6 +4,8 @@ import com.cart_service.interfaceadapters.presenters.dto.product.ProductDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
 import com.cart_service.service.ProductService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,9 +28,9 @@ public class ProductServiceImpl implements ProductService {
     @Qualifier("webclient")
     private final WebClient webClient;
 
-    private static final String PRODUCT_SERVICE_URL = "http://PRODUCT-API/api/v1/product";
+    private static final String PRODUCT_SERVICE_URL = "http://spring-batch-products/api/v1/product";
 
-    private static final String REAERVATION_SERVICE_URL = "http://PRODUCT-API/products/reservation";
+    private static final String REAERVATION_SERVICE_URL = "http://spring-batch-products/products/reservation";
 
     private static final String PRODUCT_SKU_URI = "/sku/";
 

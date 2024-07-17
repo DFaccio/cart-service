@@ -1,5 +1,6 @@
 package com.cart_service.entities;
 
+import com.cart_service.util.enums.ReservationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,6 @@ public class ProductDetails implements Serializable {
 
     private double total;
 
-    private String status;
+    private ReservationStatus status;
 
 }

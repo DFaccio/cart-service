@@ -9,8 +9,15 @@ import com.cart_service.service.ProductService;
 import com.cart_service.usercase.CartBusiness;
 import com.cart_service.util.enums.CartStatus;
 import com.cart_service.util.exceptions.ValidationsException;
+import com.cart_service.util.pagination.PagedResponse;
+import com.cart_service.util.pagination.Pagination;
+import com.netflix.eventbus.spi.CatchAllSubscriber;
 import jakarta.annotation.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -107,4 +114,26 @@ public class CartController {
 
     }
 
+    public PagedResponse<CartDto> findAll(String costumerId, CartStatus cartStatus, Pagination page){
+
+        Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
+
+        Page<Cart> cart = null;
+
+        boolean costumerIdFilter = costumerId != null && !costumerId.trim().isEmpty();
+        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
+
+        if (!costumerIdFilter && !cartStatusFilter) {
+            cart = cartGateway.findAll(pageable);
+        } else if (costumerIdFilter && !cartStatusFilter) {
+            cart = cartGateway.findAllByCostumerId(costumerId, pageable);
+        }else if (!costumerIdFilter) {
+            cart = cartGateway.findAllByStatus(cartStatus, pageable);
+        }else {
+            cart = cartGateway.findAllByCostumerIdAndStatus(costumerId, cartStatus, pageable);
+        }
+
+        return cartPresenter.convertDocuments(cart);
+
+    }
 }

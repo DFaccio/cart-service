@@ -20,15 +20,15 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
 
         cartDto.setId(document.getId());
         cartDto.setCostumerId(document.getCostumerId());
-        cartDto.setProductReservationDto(document.getProductReservation()
-                .stream()
-                .map(productReservation -> productReservationPresenter.convert(productReservation))
-                .collect(Collectors.toList()));
         cartDto.setProductsQuantity(document.getProductsQuantity());
         cartDto.setCartValue(document.getCartValue());
         cartDto.setCreationDate(document.getCreationDate());
         cartDto.setUpdateDate(document.getUpdateDate());
-        cartDto.setStatus(document.getStatus());
+        cartDto.setCartStatus(document.getCartStatus());
+        cartDto.setProductReservationDto(document.getProductReservation()
+                .stream()
+                .map(productReservation -> productReservationPresenter.convert(productReservation))
+                .collect(Collectors.toList()));
 
         return cartDto;
 
@@ -41,15 +41,15 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
 
         cart.setId(dto.getId());
         cart.setCostumerId(dto.getCostumerId());
-        cart.setProductReservation(dto.getProductReservationDto()
-                .stream()
-                .map(productReservationDto -> productReservationPresenter.convert(productReservationDto))
-                .collect(Collectors.toList()));
         cart.setProductsQuantity(dto.getProductsQuantity());
         cart.setCartValue(dto.getCartValue());
         cart.setCreationDate(dto.getCreationDate());
         cart.setUpdateDate(dto.getUpdateDate());
-        cart.setStatus(dto.getStatus());
+        cart.setCartStatus(dto.getCartStatus());
+        cart.setProductReservation(dto.getProductReservationDto()
+                .stream()
+                .map(productReservationDto -> productReservationPresenter.convert(productReservationDto))
+                .collect(Collectors.toList()));
 
         return cart;
 

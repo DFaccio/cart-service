@@ -1,6 +1,7 @@
 package com.cart_service.interfaceadapters.presenters.dto.cart;
 
 import com.cart_service.interfaceadapters.presenters.dto.Dto;
+import com.cart_service.util.enums.ReservationStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,6 @@ public class ProductDetailsDto extends Dto implements Serializable {
 
     private double total;
 
-    private String status;
+    private ReservationStatus status;
 
 }

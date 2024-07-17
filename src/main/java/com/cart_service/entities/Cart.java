@@ -24,8 +24,6 @@ public class Cart implements Serializable {
 
     private String costumerId;
 
-    private List<ProductReservation> productReservation;
-
     private int productsQuantity;
 
     private double cartValue;
@@ -34,6 +32,8 @@ public class Cart implements Serializable {
 
     private LocalDateTime updateDate;
 
-    private CartStatus status;
+    private CartStatus cartStatus;
+
+    private List<ProductReservation> productReservation;
 
 }

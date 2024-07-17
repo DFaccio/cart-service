@@ -24,7 +24,7 @@ public class CartDto extends Dto implements Serializable {
 
     private LocalDateTime updateDate;
 
-    private CartStatus status;
+    private CartStatus cartStatus;
 
     private List<ProductReservationDto> productReservationDto;
 

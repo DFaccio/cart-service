@@ -97,7 +97,7 @@ public class CartBusiness {
             cart.setCartValue(calculateCartValue(productReservationList));
             cart.setCreationDate(LocalDateTime.now());
             cart.setUpdateDate(LocalDateTime.now());
-            cart.setStatus(CartStatus.CREATED);
+            cart.setCartStatus(CartStatus.CREATED);
 
         } else {
 
@@ -295,7 +295,7 @@ public class CartBusiness {
 
     public Cart confirm(Cart cart) {
 
-        cart.setStatus(CartStatus.FINISHED);
+        cart.setCartStatus(CartStatus.FINISHED);
 
         return cart;
 
@@ -303,7 +303,7 @@ public class CartBusiness {
 
     public Cart cancel(Cart cart) {
 
-        cart.setStatus(CartStatus.CANCELLED);
+        cart.setCartStatus(CartStatus.CANCELLED);
 
         return cart;
 
