@@ -33,33 +33,32 @@ public class CartWeb {
     }
 
     @Operation(summary = "Atualiza um ou mais produtos de um carrinho")
-    @PostMapping(value = "/update")
-    public Mono<CartDto> updateCart(@PathVariable String costumertId,
-                             @Valid @RequestBody CartDto cartDto) throws ValidationsException {
+    @PostMapping(value = "/updateCart")
+    public Mono<CartDto> updateCart(@Valid @RequestBody CartDto cartDto) throws ValidationsException {
 
         return cartController.updateCart(cartDto);
 
     }
 
     @Operation(summary = "Consulta um carrinho")
-    @GetMapping(value = "/{id}", consumes = "application/json")
-    public Mono<CartDto> getCart(@PathVariable String id){
+    @GetMapping(value = "/findCart/{id}", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> findCart(@PathVariable String id) throws ValidationsException {
 
         return cartController.getCart(id);
 
     }
 
     @Operation(summary = "Finaliza um carrinho")
-    @PutMapping(value = "/confirm/{id}", consumes = "application/json")
-    public Mono<CartDto> confirm(@PathVariable String id){
+    @PutMapping(value = "/confirm/{id}", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> confirm(@PathVariable String id) throws ValidationsException {
 
         return cartController.confirm(id);
 
     }
 
     @Operation(summary = "Cancela um carrinho")
-    @PutMapping(value = "/cancel/{id}", consumes = "application/json")
-    public Mono<CartDto> cancel(@PathVariable String id){
+    @PutMapping(value = "/cancel/{id}", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> cancel(@PathVariable String id) throws ValidationsException {
 
         return cartController.cancel(id);
 
@@ -67,11 +66,11 @@ public class CartWeb {
 
     @Operation(summary = "Busca todos os carrinhos, podendo filtrar por usuário e status")
     @GetMapping(value="/findCarts")
-    public PagedResponse<CartDto> findByEmail(
+    public PagedResponse<CartDto> findCarts(
             @RequestParam("costumerId") String costumerId,
             @RequestParam("cartStatus") CartStatus cartStatus,
             @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
-            @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) throws ValidationsException {
+            @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
 
         Pagination page = new Pagination(initialPage, pageSize);
 

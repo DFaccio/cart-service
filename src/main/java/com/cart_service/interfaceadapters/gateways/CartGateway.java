@@ -28,9 +28,9 @@ public class CartGateway {
 
     }
 
-    public Cart findById(String id){
+    public Optional<Cart> findById(String id){
 
-        return cartRepository.findById(id).block();
+        return cartRepository.findById(id).blockOptional();
 
     }
 

@@ -11,13 +11,11 @@ import com.cart_service.util.enums.CartStatus;
 import com.cart_service.util.exceptions.ValidationsException;
 import com.cart_service.util.pagination.PagedResponse;
 import com.cart_service.util.pagination.Pagination;
-import com.netflix.eventbus.spi.CatchAllSubscriber;
 import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -52,19 +50,35 @@ public class CartController {
 
     }
 
-    public Mono<CartDto> getCart(String id){
+    public Mono<CartDto> getCart(String id) throws ValidationsException {
 
-        Cart cart = cartGateway.findById(id);
+        Optional<Cart> optional = cartGateway.findById(id);
 
-        return Mono.fromCallable(() -> cartPresenter.convert(cart));
+        Cart cart;
+
+        if(optional.isPresent()){
+
+            cart = optional.get();
+
+        }else{
+
+            throw new ValidationsException("0001");
+
+        }
+
+        Cart finalCart = cart;
+
+        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
 
     }
 
-    public Mono<CartDto> updateCart(CartDto cartDto){
+    public Mono<CartDto> updateCart(CartDto cartDto) throws ValidationsException {
 
-        Cart cart = cartGateway.findById(cartDto.getId());
+        Optional<Cart> optional = cartGateway.findById(cartDto.getId());
 
-        cart = cartBusiness.updateCart(cartDto, cart);
+        Cart cart;
+
+        cart = cartBusiness.updateCart(cartDto, optional);
 
         cart = cartGateway.save(cart);
 
@@ -74,13 +88,15 @@ public class CartController {
 
     }
 
-    public Mono<CartDto> confirm(String cartId){
+    public Mono<CartDto> confirm(String cartId) throws ValidationsException {
 
         List<String> reservationIds;
 
-        Cart cart = cartGateway.findById(cartId);
+        Optional<Cart> optional = cartGateway.findById(cartId);
 
-        cart = cartBusiness.confirm(cart);
+        Cart cart;
+
+        cart = cartBusiness.confirm(optional);
 
         reservationIds = cartBusiness.reservationIds(cart);
 
@@ -94,13 +110,15 @@ public class CartController {
 
     }
 
-    public Mono<CartDto> cancel(String cartId){
+    public Mono<CartDto> cancel(String cartId) throws ValidationsException {
 
         List<String> reservationIds;
 
-        Cart cart = cartGateway.findById(cartId);
+        Optional<Cart> optional = cartGateway.findById(cartId);
 
-        cart = cartBusiness.cancel(cart);
+        Cart cart;
+
+        cart = cartBusiness.cancel(optional);
 
         reservationIds = cartBusiness.reservationIds(cart);
 

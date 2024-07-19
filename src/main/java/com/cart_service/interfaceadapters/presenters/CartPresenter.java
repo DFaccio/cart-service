@@ -25,7 +25,7 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
         cartDto.setCreationDate(document.getCreationDate());
         cartDto.setUpdateDate(document.getUpdateDate());
         cartDto.setCartStatus(document.getCartStatus());
-        cartDto.setProductReservationDto(document.getProductReservation()
+        cartDto.setProductReservation(document.getProductReservation()
                 .stream()
                 .map(productReservation -> productReservationPresenter.convert(productReservation))
                 .collect(Collectors.toList()));
@@ -46,7 +46,7 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
         cart.setCreationDate(dto.getCreationDate());
         cart.setUpdateDate(dto.getUpdateDate());
         cart.setCartStatus(dto.getCartStatus());
-        cart.setProductReservation(dto.getProductReservationDto()
+        cart.setProductReservation(dto.getProductReservation()
                 .stream()
                 .map(productReservationDto -> productReservationPresenter.convert(productReservationDto))
                 .collect(Collectors.toList()));

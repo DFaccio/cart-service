@@ -54,7 +54,7 @@ public class CartBusiness {
 
         boolean hasReservation = false;
 
-        for (ReservationDto reservationDto : reservationListDto.getReservationDto()) {
+        for (ReservationDto reservationDto : reservationListDto.getReservations()) {
 
             ProductDetails productDetails = new ProductDetails();
             ProductReservation productReservation = new ProductReservation();
@@ -63,7 +63,7 @@ public class CartBusiness {
 
             int quantity = reservationDto.getQuantity();
             double productValue = productDto.getValue();
-            String reservationStatus = reservationDto.getStatus();
+            ReservationStatus reservationStatus = reservationDto.getStatus();
 
             productDetails.setSku(productDto.getCategoryInformationDto().getAvailabilityDto().getSku());
             productDetails.setName(productDto.getCategoryInformationDto().getName());
@@ -71,16 +71,16 @@ public class CartBusiness {
             productDetails.setQuantity(quantity);
             productDetails.setStatus(reservationStatus);
 
-            if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+            if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
 
                 hasReservation = true;
 
                 productReservation.setReservationId(reservationDto.getId());
                 productDetails.setTotal(calculateProductValue(quantity, productValue));
 
-            } else if (StringUtils.equals(reservationStatus, ReservationStatus.STOCKOUT.toString())) {
+            } else if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.STOCKOUT.toString())) {
 
-                productDetails.setTotal(0);
+                productDetails.setTotal(0.0);
 
             }
 
@@ -111,10 +111,16 @@ public class CartBusiness {
 
     public Cart addProduct(Cart cart, ReservationListDto reservationListDto) throws ValidationsException {
 
-        List<ReservationDto> reservations = reservationListDto.getReservationDto();
+        List<ReservationDto> reservations = reservationListDto.getReservations();
 
         List<ProductReservation> productReservationList = cart.getProductReservation();
         List<ReservationDto> reservationsToMake = new ArrayList<>();
+
+        if(!StringUtils.equals(cart.getCartStatus().toString(), CartStatus.CREATED.toString())){
+
+            throw new ValidationsException("0004");
+
+        }
 
         boolean makeReservation = false;
 
@@ -139,11 +145,11 @@ public class CartBusiness {
 
                     reservationDto = cartHelper.updateReservation(reservationDto);
 
-                    String reservationStatus = reservationDto.getStatus();
+                    ReservationStatus reservationStatus = reservationDto.getStatus();
 
                     productDetails.setStatus(reservationStatus);
 
-                    if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+                    if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
 
                         productDetails.setQuantity(quantity);
                         productDetails.setTotal(calculateProductValue(quantity, productValue));
@@ -166,11 +172,12 @@ public class CartBusiness {
         if (makeReservation) {
 
             ReservationListDto makeReservationList = new ReservationListDto();
-            makeReservationList.setReservationDto(reservationsToMake);
+
+            makeReservationList.setReservations(reservationsToMake);
 
             makeReservationList = cartHelper.createReservation(makeReservationList);
 
-            for (ReservationDto reservationDto : makeReservationList.getReservationDto()) {
+            for (ReservationDto reservationDto : makeReservationList.getReservations()) {
 
                 ProductDetails productDetails = new ProductDetails();
                 ProductReservation productReservation = new ProductReservation();
@@ -179,7 +186,7 @@ public class CartBusiness {
 
                 int quantity = reservationDto.getQuantity();
                 double productValue = productDto.getValue();
-                String reservationStatus = reservationDto.getStatus();
+                ReservationStatus reservationStatus = reservationDto.getStatus();
 
                 productDetails.setSku(productDto.getCategoryInformationDto().getAvailabilityDto().getSku());
                 productDetails.setName(productDto.getCategoryInformationDto().getName());
@@ -187,14 +194,14 @@ public class CartBusiness {
                 productDetails.setQuantity(quantity);
                 productDetails.setStatus(reservationStatus);
 
-                if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+                if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
 
                     productReservation.setReservationId(reservationDto.getId());
                     productDetails.setTotal(calculateProductValue(quantity, productValue));
 
-                } else if (StringUtils.equals(reservationStatus, ReservationStatus.STOCKOUT.toString())) {
+                } else if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.STOCKOUT.toString())) {
 
-                    productDetails.setTotal(0);
+                    productDetails.setTotal(0.0);
 
                 }
 
@@ -214,10 +221,28 @@ public class CartBusiness {
 
     }
 
-    public Cart updateCart(CartDto cartDto, Cart cart){
+    public Cart updateCart(CartDto cartDto, Optional<Cart> optional) throws ValidationsException {
+
+        Cart cart;
+
+        if(optional.isPresent()){
+
+            cart = optional.get();
+
+        }else{
+
+            throw new ValidationsException("0001");
+
+        }
+
+        if(!StringUtils.equals(cart.getCartStatus().toString(), CartStatus.CREATED.toString())){
+
+            throw new ValidationsException("0004");
+
+        }
 
         List<ProductReservation> reservedProductsList = cart.getProductReservation();
-        List<ProductReservationDto> updateProductsList = cartDto.getProductReservationDto();
+        List<ProductReservationDto> updateProductsList = cartDto.getProductReservation();
 
         for (ProductReservation productReservation : reservedProductsList) {
 
@@ -226,8 +251,8 @@ public class CartBusiness {
 
             for (ProductReservationDto updateProducts : updateProductsList) {
 
-                String updatedSku = updateProducts.getProductDetailsDto().getSku();
-                int updateQuantity = updateProducts.getProductDetailsDto().getQuantity();
+                String updatedSku = updateProducts.getProductDetails().getSku();
+                int updateQuantity = updateProducts.getProductDetails().getQuantity();
 
                 if (StringUtils.equals(reservedSku, updatedSku) || reservedQuantity != updateQuantity) {
 
@@ -241,12 +266,13 @@ public class CartBusiness {
 
                     reservationDto = cartHelper.updateReservation(reservationDto);
 
-                    String reservationStatus = reservationDto.getStatus();
+                    ReservationStatus reservationStatus = reservationDto.getStatus();
 
                     if(updateQuantity == 0){
 
-                        productDetails.setStatus(ReservationStatus.CANCELED.toString());
+                        productDetails.setStatus(ReservationStatus.CANCELED);
                         productDetails.setQuantity(updateQuantity);
+                        productDetails.setTotal(0.0);
 
                     }else{
 
@@ -254,7 +280,7 @@ public class CartBusiness {
 
                     }
 
-                    if (StringUtils.equals(reservationStatus, ReservationStatus.READY.toString())) {
+                    if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
 
                         productDetails.setQuantity(updateQuantity);
                         productDetails.setTotal(calculateProductValue(updateQuantity, productValue));
@@ -293,17 +319,58 @@ public class CartBusiness {
 
     }
 
-    public Cart confirm(Cart cart) {
+    public Cart confirm(Optional<Cart> optional) throws ValidationsException {
 
-        cart.setCartStatus(CartStatus.FINISHED);
+        Cart cart;
+
+        if(optional.isPresent()){
+
+            cart = optional.get();
+
+        }else{
+
+            throw new ValidationsException("0001");
+
+        }
+
+        if(StringUtils.equals(cart.getCartStatus().toString(), CartStatus.CREATED.toString())){
+
+            cart.setCartStatus(CartStatus.FINISHED);
+
+        }else{
+
+            throw new ValidationsException("0002");
+
+        }
+
 
         return cart;
 
     }
 
-    public Cart cancel(Cart cart) {
+    public Cart cancel(Optional<Cart> optional) throws ValidationsException {
 
-        cart.setCartStatus(CartStatus.CANCELLED);
+        Cart cart;
+
+        if(optional.isPresent()){
+
+            cart = optional.get();
+
+        }else{
+
+            throw new ValidationsException("0001");
+
+        }
+
+        if(StringUtils.equals(cart.getCartStatus().toString(), CartStatus.CREATED.toString())){
+
+            cart.setCartStatus(CartStatus.CANCELLED);
+
+        }else{
+
+            throw new ValidationsException("0003");
+
+        }
 
         return cart;
 

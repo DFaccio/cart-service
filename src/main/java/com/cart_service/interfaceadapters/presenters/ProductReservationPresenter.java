@@ -17,7 +17,7 @@ public class ProductReservationPresenter implements Presenter<ProductReservation
         ProductReservationDto productReservationDto = new ProductReservationDto();
 
         productReservationDto.setReservationId(document.getReservationId());
-        productReservationDto.setProductDetailsDto(productDetailsPresenter.convert(document.getProductDetails()));
+        productReservationDto.setProductDetails(productDetailsPresenter.convert(document.getProductDetails()));
 
         return productReservationDto;
 
@@ -29,7 +29,7 @@ public class ProductReservationPresenter implements Presenter<ProductReservation
         ProductReservation productReservation = new ProductReservation();
 
         productReservation.setReservationId(dto.getReservationId());
-        productReservation.setProductDetails(productDetailsPresenter.convert(dto.getProductDetailsDto()));
+        productReservation.setProductDetails(productDetailsPresenter.convert(dto.getProductDetails()));
 
         return productReservation;
 
