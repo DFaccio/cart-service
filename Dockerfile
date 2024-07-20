@@ -20,6 +20,6 @@ WORKDIR /cart-system
 
 COPY --from=build /cart-system/target/*.jar ./cart-service.jar
 
-EXPOSE 7077
+EXPOSE 7075
 
 ENTRYPOINT ["java","-jar","cart-service.jar"]
