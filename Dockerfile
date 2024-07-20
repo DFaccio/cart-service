@@ -3,7 +3,7 @@
 #
 FROM maven:3.9.6-amazoncorretto-21 AS build
 
-WORKDIR /ecommerce-system
+WORKDIR /cart-system
 
 COPY pom.xml .
 RUN mvn -B dependency:go-offline
@@ -16,10 +16,10 @@ RUN mvn -B package -DskipTests
 #
 FROM amazoncorretto:21-alpine-jdk
 
-WORKDIR /ecommerce-system
+WORKDIR /cart-system
 
-COPY --from=build /ecommerce-system/target/*.jar ./cart-service.jar
+COPY --from=build /cart-system/target/*.jar ./cart-service.jar
 
-EXPOSE 7078
+EXPOSE 7075
 
 ENTRYPOINT ["java","-jar","cart-service.jar"]
