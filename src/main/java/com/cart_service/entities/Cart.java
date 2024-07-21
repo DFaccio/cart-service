@@ -22,7 +22,7 @@ public class Cart implements Serializable {
     @Id
     private String Id;
 
-    private String costumerId;
+    private String customerId;
 
     private int productsQuantity;
 

@@ -19,7 +19,7 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
         CartDto cartDto = new CartDto();
 
         cartDto.setId(document.getId());
-        cartDto.setCostumerId(document.getCostumerId());
+        cartDto.setCustomerId(document.getCustomerId());
         cartDto.setProductsQuantity(document.getProductsQuantity());
         cartDto.setCartValue(document.getCartValue());
         cartDto.setCreationDate(document.getCreationDate());
@@ -40,7 +40,7 @@ public class CartPresenter implements Presenter<Cart, CartDto>{
         Cart cart = new Cart();
 
         cart.setId(dto.getId());
-        cart.setCostumerId(dto.getCostumerId());
+        cart.setCustomerId(dto.getCustomerId());
         cart.setProductsQuantity(dto.getProductsQuantity());
         cart.setCartValue(dto.getCartValue());
         cart.setCreationDate(dto.getCreationDate());

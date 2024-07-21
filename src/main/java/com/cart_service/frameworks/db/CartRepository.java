@@ -7,24 +7,23 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 
 import java.util.Optional;
 
 @Repository
 public interface CartRepository extends ReactiveMongoRepository<Cart, String> {
 
-    @Query(value="{$and: [{'costumerId':{$eq:?0}},{'cartStatus':{$eq:?1}}]}")
-    Optional<Cart> findByCostumerIdAndStatus(String costumerId, CartStatus cartStatus);
+    @Query(value="{$and: [{'customerId':{$eq:?0}},{'cartStatus':{$eq:?1}}]}")
+    Optional<Cart> findByCustomerIdAndStatus(String customerId, CartStatus cartStatus);
 
-    Page<Cart> findAll(Pageable pageable);
-
-    @Query(value="{'costumerId':{$eq:?0}")
-    Page<Cart> findAllByCostumerId(String costumerId, Pageable pageable);
+    @Query(value="{'customerId':{$eq:?0}")
+    Flux<Cart> findAllByCustomerId(String customerId);
 
     @Query(value="{'cartStatus':{$eq:?0}")
-    Page<Cart> findAllByStatus(CartStatus cartStatus, Pageable pageable);
+    Flux<Cart> findAllByStatus(CartStatus cartStatus);
 
-    @Query(value="{and: [{'costumerId':{$eq:?0}},{'cartStatus':{$eq:?1}}]}")
-    Page<Cart> findAllByCostumerIdAndStatus(String costumerId, CartStatus cartStatus, Pageable pageable);
+    @Query(value="{and: [{'customerId':{$eq:?0}},{'cartStatus':{$eq:?1}}]}")
+    Flux<Cart> findAllByCustomerIdAndStatus(String customerId, CartStatus cartStatus);
 
 }

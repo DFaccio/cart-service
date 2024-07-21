@@ -16,7 +16,7 @@ import java.util.List;
 public class CartDto extends Dto implements Serializable {
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    private String costumerId;
+    private String customerId;
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private int productsQuantity;
