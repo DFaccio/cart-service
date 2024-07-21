@@ -5,13 +5,13 @@ import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
 import com.cart_service.util.enums.CartStatus;
 import com.cart_service.util.exceptions.ValidationsException;
-import com.cart_service.util.pagination.PagedResponse;
 import com.cart_service.util.pagination.Pagination;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -65,16 +65,30 @@ public class CartWeb {
     }
 
     @Operation(summary = "Busca todos os carrinhos, podendo filtrar por usuário e status")
-    @GetMapping(value="/findCarts")
-    public PagedResponse<CartDto> findCarts(
-            @RequestParam("costumerId") String costumerId,
+    @GetMapping(value="/findAllCarts")
+    public Mono<Page<CartDto>> findAllCarts(
+            @RequestParam("customerId") String customerId,
             @RequestParam("cartStatus") CartStatus cartStatus,
             @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
             @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
 
         Pagination page = new Pagination(initialPage, pageSize);
 
-        return cartController.findAll(costumerId, cartStatus, page);
+        return cartController.findAllCarts(page);
+
+    }
+
+    @Operation(summary = "Busca todos os carrinhos, podendo filtrar por usuário e status")
+    @GetMapping(value="/findCartsFilter")
+    public Mono<Page<CartDto>> findCartsFilter(
+            @RequestParam("customerId") String customerId,
+            @RequestParam("cartStatus") CartStatus cartStatus,
+            @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
+            @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
+
+        Pagination page = new Pagination(initialPage, pageSize);
+
+        return cartController.findCartsFilter(customerId, cartStatus, page);
 
     }
 

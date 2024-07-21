@@ -49,7 +49,7 @@ public class SwaggerConfig {
     public GroupedOpenApi groupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("Carrinho")
-                .packagesToScan("com.spring.batch.api.products.frameworks.web")
+                .packagesToScan("com.cart_service.frameworks.web")
                 .build();
     }
 

@@ -92,7 +92,7 @@ public class CartBusiness {
         if (hasReservation) {
 
             cart.setProductReservation(productReservationList);
-            cart.setCostumerId(costumertId);
+            cart.setCustomerId(costumertId);
             cart.setProductsQuantity(calculateProductsQuantity(productReservationList));
             cart.setCartValue(calculateCartValue(productReservationList));
             cart.setCreationDate(LocalDateTime.now());

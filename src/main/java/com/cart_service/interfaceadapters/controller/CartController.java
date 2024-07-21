@@ -2,6 +2,7 @@ package com.cart_service.interfaceadapters.controller;
 
 import com.cart_service.entities.Cart;
 import com.cart_service.interfaceadapters.gateways.CartGateway;
+import com.cart_service.interfaceadapters.helper.CartHelper;
 import com.cart_service.interfaceadapters.presenters.CartPresenter;
 import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
@@ -9,13 +10,14 @@ import com.cart_service.service.ProductService;
 import com.cart_service.usercase.CartBusiness;
 import com.cart_service.util.enums.CartStatus;
 import com.cart_service.util.exceptions.ValidationsException;
-import com.cart_service.util.pagination.PagedResponse;
 import com.cart_service.util.pagination.Pagination;
 import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -36,13 +38,16 @@ public class CartController {
     @Resource
     private ProductService productService;
 
+    @Resource
+    private CartHelper cartHelper;
+
     public Mono<CartDto> addProductToCart(String costumertId, ReservationListDto reservationDto) throws ValidationsException {
 
-        Optional<Cart> optional = cartGateway.findByCostumerIdAndStatus(costumertId, CartStatus.CREATED);
+        Optional<Cart> optional = cartGateway.findByCustomerIdAndStatus(costumertId, CartStatus.CREATED);
 
         Cart cart = cartBusiness.addProductToCart(optional, costumertId, reservationDto);
 
-        cart = cartGateway.save(cart);
+        cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
@@ -80,7 +85,7 @@ public class CartController {
 
         cart = cartBusiness.updateCart(cartDto, optional);
 
-        cart = cartGateway.save(cart);
+        cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
@@ -102,7 +107,7 @@ public class CartController {
 
         productService.confirmReservation(reservationIds);
 
-        cart = cartGateway.save(cart);
+        cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
@@ -124,7 +129,7 @@ public class CartController {
 
         productService.cancelReservation(reservationIds);
 
-        cart = cartGateway.save(cart);
+        cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
@@ -132,26 +137,35 @@ public class CartController {
 
     }
 
-    public PagedResponse<CartDto> findAll(String costumerId, CartStatus cartStatus, Pagination page){
+    public Mono<Page<CartDto>> findAllCarts(Pagination page){
 
         Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
 
-        Page<Cart> cart = null;
+        Flux<Cart> cart = cartGateway.findAll(pageable);
 
-        boolean costumerIdFilter = costumerId != null && !costumerId.trim().isEmpty();
-        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
-
-        if (!costumerIdFilter && !cartStatusFilter) {
-            cart = cartGateway.findAll(pageable);
-        } else if (costumerIdFilter && !cartStatusFilter) {
-            cart = cartGateway.findAllByCostumerId(costumerId, pageable);
-        }else if (!costumerIdFilter) {
-            cart = cartGateway.findAllByStatus(cartStatus, pageable);
-        }else {
-            cart = cartGateway.findAllByCostumerIdAndStatus(costumerId, cartStatus, pageable);
-        }
-
-        return cartPresenter.convertDocuments(cart);
+        return cartHelper.convert(cart, pageable);
 
     }
+
+    public Mono<Page<CartDto>> findCartsFilter(String customerId, CartStatus cartStatus, Pagination page){
+
+        Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
+
+        Flux<Cart> cart;
+
+        boolean customerIdFilter = customerId != null && !customerId.trim().isEmpty();
+        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
+
+        if (customerIdFilter && !cartStatusFilter) {
+            cart = cartGateway.findAllByCustomerId(customerId);
+        }else if (!customerIdFilter) {
+            cart = cartGateway.findAllByStatus(cartStatus);
+        }else {
+            cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
+        }
+
+        return cartHelper.convert(cart, pageable);
+
+    }
+
 }

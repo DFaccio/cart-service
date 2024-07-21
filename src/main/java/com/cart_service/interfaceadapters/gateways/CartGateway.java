@@ -4,9 +4,10 @@ import com.cart_service.entities.Cart;
 import com.cart_service.frameworks.db.CartRepository;
 import com.cart_service.util.enums.CartStatus;
 import jakarta.annotation.Resource;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -16,15 +17,15 @@ public class CartGateway {
     @Resource
     private CartRepository cartRepository;
 
-    public Optional<Cart> findByCostumerIdAndStatus(String costumerId, CartStatus status){
+    public Optional<Cart> findByCustomerIdAndStatus(String customerId, CartStatus status){
 
-        return cartRepository.findByCostumerIdAndStatus(costumerId, status);
+        return cartRepository.findByCustomerIdAndStatus(customerId, status);
 
     }
 
-    public Cart save(Cart cart){
+    public Mono<Cart> save(Cart cart){
 
-        return cartRepository.save(cart).block();
+        return cartRepository.save(cart);
 
     }
 
@@ -34,27 +35,27 @@ public class CartGateway {
 
     }
 
-    public Page<Cart> findAll(Pageable pageable){
+    public Flux<Cart> findAll(Pageable pageable){
 
-        return cartRepository.findAll(pageable);
-
-    }
-
-    public Page<Cart> findAllByCostumerId(String costumerId, Pageable pageable){
-
-        return cartRepository.findAllByCostumerId(costumerId, pageable);
+        return cartRepository.findAll();
 
     }
 
-    public Page<Cart> findAllByStatus(CartStatus cartStatus, Pageable pageable){
+    public Flux<Cart> findAllByCustomerId(String customerId){
 
-        return cartRepository.findAllByStatus(cartStatus, pageable);
+        return cartRepository.findAllByCustomerId(customerId);
 
     }
 
-    public Page<Cart> findAllByCostumerIdAndStatus(String costumerId, CartStatus cartStatus, Pageable pageable){
+    public Flux<Cart> findAllByStatus(CartStatus cartStatus){
 
-        return cartRepository.findAllByCostumerIdAndStatus(costumerId, cartStatus, pageable);
+        return cartRepository.findAllByStatus(cartStatus);
+
+    }
+
+    public Flux<Cart> findAllByCustomerIdAndStatus(String customerId, CartStatus cartStatus){
+
+        return cartRepository.findAllByCustomerIdAndStatus(customerId, cartStatus);
 
     }
 
