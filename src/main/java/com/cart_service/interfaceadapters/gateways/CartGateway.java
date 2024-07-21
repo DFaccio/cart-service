@@ -35,7 +35,7 @@ public class CartGateway {
 
     }
 
-    public Flux<Cart> findAll(Pageable pageable){
+    public Flux<Cart> findAll(){
 
         return cartRepository.findAll();
 

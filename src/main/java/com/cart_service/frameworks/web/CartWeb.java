@@ -64,21 +64,20 @@ public class CartWeb {
 
     }
 
-    @Operation(summary = "Busca todos os carrinhos, podendo filtrar por usuário e status")
+    @Operation(summary = "Busca todos os carrinhos")
     @GetMapping(value="/findAllCarts")
     public Mono<Page<CartDto>> findAllCarts(
-            @RequestParam("customerId") String customerId,
             @RequestParam("cartStatus") CartStatus cartStatus,
             @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
             @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
 
         Pagination page = new Pagination(initialPage, pageSize);
 
-        return cartController.findAllCarts(page);
+        return cartController.findAllCarts(page, cartStatus);
 
     }
 
-    @Operation(summary = "Busca todos os carrinhos, podendo filtrar por usuário e status")
+    @Operation(summary = "Busca carrinhos, podendo filtrar por usuário e status")
     @GetMapping(value="/findCartsFilter")
     public Mono<Page<CartDto>> findCartsFilter(
             @RequestParam("customerId") String customerId,
@@ -88,7 +87,7 @@ public class CartWeb {
 
         Pagination page = new Pagination(initialPage, pageSize);
 
-        return cartController.findCartsFilter(customerId, cartStatus, page);
+        return cartController.findCustomerCartsFilter(customerId, cartStatus, page);
 
     }
 

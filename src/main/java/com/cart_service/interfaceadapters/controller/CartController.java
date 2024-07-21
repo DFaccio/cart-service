@@ -137,17 +137,29 @@ public class CartController {
 
     }
 
-    public Mono<Page<CartDto>> findAllCarts(Pagination page){
+    public Mono<Page<CartDto>> findAllCarts(Pagination page, CartStatus cartStatus){
 
         Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
 
-        Flux<Cart> cart = cartGateway.findAll(pageable);
+        Flux<Cart> cart;
+
+        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
+
+        if(cartStatusFilter){
+
+            cart = cartGateway.findAllByStatus(cartStatus);
+
+        }else{
+
+            cart = cartGateway.findAll();
+
+        }
 
         return cartHelper.convert(cart, pageable);
 
     }
 
-    public Mono<Page<CartDto>> findCartsFilter(String customerId, CartStatus cartStatus, Pagination page){
+    public Mono<Page<CartDto>> findCustomerCartsFilter(String customerId, CartStatus cartStatus, Pagination page){
 
         Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
 
@@ -157,11 +169,13 @@ public class CartController {
         boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
 
         if (customerIdFilter && !cartStatusFilter) {
+
             cart = cartGateway.findAllByCustomerId(customerId);
-        }else if (!customerIdFilter) {
-            cart = cartGateway.findAllByStatus(cartStatus);
+
         }else {
+
             cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
+
         }
 
         return cartHelper.convert(cart, pageable);
