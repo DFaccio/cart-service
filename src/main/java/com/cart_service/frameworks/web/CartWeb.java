@@ -41,10 +41,10 @@ public class CartWeb {
     }
 
     @Operation(summary = "Consulta um carrinho")
-    @GetMapping(value = "/findCart/{id}", consumes = "application/json", produces = "application/json")
-    public Mono<CartDto> findCart(@PathVariable String id) throws ValidationsException {
+    @GetMapping(value = "/findCustomerCart/{id}", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> findCustomerCart(@PathVariable String id) throws ValidationsException {
 
-        return cartController.getCart(id);
+        return cartController.findCustomerCart(id);
 
     }
 
@@ -67,21 +67,26 @@ public class CartWeb {
     @Operation(summary = "Busca todos os carrinhos")
     @GetMapping(value="/findAllCarts")
     public Mono<Page<CartDto>> findAllCarts(
-            @RequestParam("cartStatus") CartStatus cartStatus,
+            @Parameter(description = "ID do usuário", example = "123456")
+            @RequestParam(required = false) String customerId,
+            @Parameter(description = "Status do carrinho", example = "CREATED")
+            @RequestParam(required = false) CartStatus cartStatus,
             @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
             @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
 
         Pagination page = new Pagination(initialPage, pageSize);
 
-        return cartController.findAllCarts(page, cartStatus);
+        return cartController.findAllCarts(page, cartStatus, customerId);
 
     }
 
     @Operation(summary = "Busca carrinhos, podendo filtrar por usuário e status")
-    @GetMapping(value="/findCartsFilter")
-    public Mono<Page<CartDto>> findCartsFilter(
-            @RequestParam("customerId") String customerId,
-            @RequestParam("cartStatus") CartStatus cartStatus,
+    @GetMapping(value="/findCustomerCartsFilter")
+    public Mono<Page<CartDto>> findCustomerCartsFilter(
+            @Parameter(description = "ID do usuário", example = "123456")
+            @RequestParam(required = true) String customerId,
+            @Parameter(description = "Status do carrinho", example = "CREATED")
+            @RequestParam(required = false) CartStatus cartStatus,
             @Parameter(description = "Default value 10. Max value 1000", example = "10") @RequestParam(required = false) Integer pageSize,
             @Parameter(description = "Default value 0", example = "0") @RequestParam(required = false) Integer initialPage) {
 

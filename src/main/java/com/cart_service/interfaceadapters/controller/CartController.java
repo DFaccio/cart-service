@@ -13,9 +13,6 @@ import com.cart_service.util.exceptions.ValidationsException;
 import com.cart_service.util.pagination.Pagination;
 import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -55,7 +52,7 @@ public class CartController {
 
     }
 
-    public Mono<CartDto> getCart(String id) throws ValidationsException {
+    public Mono<CartDto> findCustomerCart(String id) throws ValidationsException {
 
         Optional<Cart> optional = cartGateway.findById(id);
 
@@ -137,17 +134,24 @@ public class CartController {
 
     }
 
-    public Mono<Page<CartDto>> findAllCarts(Pagination page, CartStatus cartStatus){
-
-        Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
+    public Mono<Page<CartDto>> findAllCarts(Pagination page, CartStatus cartStatus, String customerId){
 
         Flux<Cart> cart;
 
+        boolean customerIdFilter = customerId != null && !customerId.trim().isEmpty();
         boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
 
-        if(cartStatusFilter){
+        if(cartStatusFilter && customerIdFilter) {
+
+            cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
+
+        }else if(cartStatusFilter){
 
             cart = cartGateway.findAllByStatus(cartStatus);
+
+        }else if(customerIdFilter){
+
+            cart = cartGateway.findAllByCustomerId(customerId);
 
         }else{
 
@@ -155,30 +159,27 @@ public class CartController {
 
         }
 
-        return cartHelper.convert(cart, pageable);
+        return cartHelper.convertFluxToMonoPage(cart, page);
 
     }
 
     public Mono<Page<CartDto>> findCustomerCartsFilter(String customerId, CartStatus cartStatus, Pagination page){
 
-        Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
-
         Flux<Cart> cart;
 
-        boolean customerIdFilter = customerId != null && !customerId.trim().isEmpty();
         boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
 
-        if (customerIdFilter && !cartStatusFilter) {
-
-            cart = cartGateway.findAllByCustomerId(customerId);
-
-        }else {
+        if (cartStatusFilter) {
 
             cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
 
+        }else{
+
+            cart = cartGateway.findAllByCustomerId(customerId);
+
         }
 
-        return cartHelper.convert(cart, pageable);
+        return cartHelper.convertFluxToMonoPage(cart, page);
 
     }
 

@@ -7,9 +7,11 @@ import com.cart_service.interfaceadapters.presenters.dto.product.ProductDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
 import com.cart_service.service.ProductService;
+import com.cart_service.util.pagination.Pagination;
 import jakarta.annotation.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -44,7 +46,9 @@ public class CartHelper {
 
     }
 
-    public Mono<Page<CartDto>> convert(Flux<Cart> cart, Pageable pageable){
+    public Mono<Page<CartDto>> convertFluxToMonoPage(Flux<Cart> cart, Pagination page){
+
+        Pageable pageable = PageRequest.of(page.getPage(), page.getPageSize());
 
         return cart.map(cartPresenter::convert) // Converter para DTO
                 .collectList() // Coletar todos os DTOs em uma lista

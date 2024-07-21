@@ -27,8 +27,8 @@ public class ProductServiceImpl implements ProductService {
     @Qualifier("webclient")
     private final WebClient webClient;
 
-    @Value("PRODUCT_ADDRESS")
-    private static final String PRODUCT_ADRESS = "{PRODUCT_ADDRESS}";
+    @Value("${product.address}")
+    private String productAddress;
 
     private static final String PRODUCT_SERVICE_URL = "/api/v1/product";
 
@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
 
         return webBuilder.build()
                 .get()
-                .uri(String.format(PRODUCT_ADRESS, PRODUCT_SERVICE_URL, PRODUCT_SKU_URI, sku))
+                .uri(String.format(productAddress, PRODUCT_SERVICE_URL, PRODUCT_SKU_URI, sku))
                 .retrieve()
                 .bodyToMono(ProductDto.class);
 
@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
 
         return (ReservationListDto) webClient
                 .post()
-                .uri(String.format(PRODUCT_ADRESS, RESERVATION_SERVICE_URL, RESERVATION_URI))
+                .uri(String.format(productAddress, RESERVATION_SERVICE_URL, RESERVATION_URI))
                 .header("Authorization", "Bearer "+("admin@email.com"))
                 .body(reservationDto, ReservationListDto.class)
                 .retrieve();
@@ -74,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
 
         return (ReservationDto) webClient
                 .put()
-                .uri(String.format(PRODUCT_ADRESS, RESERVATION_URI, RESERVATION_ID_URI ,reservationDto.getId(), RESERVATION_QUANTITY_URI, reservationDto.getQuantity()))
+                .uri(String.format(productAddress, RESERVATION_URI, RESERVATION_ID_URI ,reservationDto.getId(), RESERVATION_QUANTITY_URI, reservationDto.getQuantity()))
                 .header("Authorization", "Bearer "+("admin@email.com"))
                 .body(reservationDto, ReservationDto.class)
                 .retrieve();
