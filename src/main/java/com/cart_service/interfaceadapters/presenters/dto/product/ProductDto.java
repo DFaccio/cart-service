@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties({"id"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductDto extends Dto implements Serializable {
 
     @JsonProperty("description")

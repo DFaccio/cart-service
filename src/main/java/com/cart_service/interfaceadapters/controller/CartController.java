@@ -1,12 +1,12 @@
 package com.cart_service.interfaceadapters.controller;
 
 import com.cart_service.entities.Cart;
+import com.cart_service.frameworks.external.inventory.ProductServiceInterface;
 import com.cart_service.interfaceadapters.gateways.CartGateway;
 import com.cart_service.interfaceadapters.helper.CartHelper;
 import com.cart_service.interfaceadapters.presenters.CartPresenter;
 import com.cart_service.interfaceadapters.presenters.dto.cart.CartDto;
 import com.cart_service.interfaceadapters.presenters.dto.reservation.ReservationListDto;
-import com.cart_service.service.ProductService;
 import com.cart_service.usercase.CartBusiness;
 import com.cart_service.util.enums.CartStatus;
 import com.cart_service.util.exceptions.ValidationsException;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class CartController {
@@ -33,13 +33,12 @@ public class CartController {
     private CartPresenter cartPresenter;
 
     @Resource
-    private ProductService productService;
+    private ProductServiceInterface productService;
 
     @Resource
     private CartHelper cartHelper;
 
-    public Mono<CartDto> addProductToCart(String customerId, ReservationListDto reservationDto) throws ValidationsException {
-
+    public Mono<CartDto> addProductToCart(String customerId, ReservationListDto reservationDto) throws ValidationsException, IOException {
         Mono<Cart> optional = cartGateway.findByCustomerIdAndStatus(customerId, CartStatus.CREATED);
 
         Cart cart = cartBusiness.addProductToCart(optional, customerId, reservationDto);
@@ -49,138 +48,98 @@ public class CartController {
         Cart finalCart = cart;
 
         return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
-
     }
 
     public Mono<CartDto> findActiveCartByCustomerId(String customerId) throws ValidationsException {
-
         Mono<Cart> optional = cartGateway.findByCustomerIdAndStatus(customerId, CartStatus.CREATED);
 
-        Cart cart;
-
-        if(optional.blockOptional().isPresent()){
-
-            cart = optional.blockOptional().get();
-
-        }else{
-
+        if (optional.blockOptional().isEmpty()) {
             throw new ValidationsException("0001");
-
         }
 
+        Cart cart = optional.blockOptional().get();
+
         Cart finalCart = cart;
 
         return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
-
     }
 
-    public Mono<CartDto> updateCart(CartDto cartDto) throws ValidationsException {
-
+    public Mono<CartDto> updateCart(CartDto cartDto) throws ValidationsException, IOException {
         Mono<Cart> optional = cartGateway.findById(cartDto.getId());
 
-        Cart cart;
-
-        cart = cartBusiness.updateCart(cartDto, optional);
+        Cart cart = cartBusiness.updateCart(cartDto, optional);
 
         cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
         return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
-
     }
 
-    public Mono<CartDto> confirm(String cartId) throws ValidationsException {
-
-        List<String> reservationIds;
-
+    public Mono<CartDto> confirm(String cartId) throws ValidationsException, IOException {
         Mono<Cart> optional = cartGateway.findById(cartId);
 
-        Cart cart;
+        Cart cart = cartBusiness.confirm(optional);
 
-        cart = cartBusiness.confirm(optional);
+        List<String> reservationIds = cartBusiness.reservationIds(cart);
 
-        reservationIds = cartBusiness.reservationIds(cart);
+        ReservationListDto reservations = productService.confirmReservation(reservationIds);
 
-        productService.confirmReservation(reservationIds);
+        cartBusiness.updateReservationsCart(cart, reservations);
 
         cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
         return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
-
     }
 
-    public Mono<CartDto> cancel(String cartId) throws ValidationsException {
-
-        List<String> reservationIds;
-
+    public Mono<CartDto> cancel(String cartId) throws ValidationsException, IOException {
         Mono<Cart> optional = cartGateway.findById(cartId);
 
-        Cart cart;
+        Cart cart = cartBusiness.cancel(optional);
 
-        cart = cartBusiness.cancel(optional);
+        List<String> reservationIds = cartBusiness.reservationIds(cart);
 
-        reservationIds = cartBusiness.reservationIds(cart);
+        ReservationListDto reservations = productService.cancelReservation(reservationIds);
 
-        productService.cancelReservation(reservationIds);
+        cartBusiness.updateReservationsCart(cart, reservations);
 
         cart = cartGateway.save(cart).block();
 
         Cart finalCart = cart;
 
         return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
-
     }
 
-    public Mono<Page<CartDto>> findAllCarts(Pagination page, CartStatus cartStatus, String customerId){
-
+    public Mono<Page<CartDto>> findAllCarts(Pagination page, CartStatus cartStatus, String customerId) {
         Flux<Cart> cart;
 
         boolean customerIdFilter = customerId != null && !customerId.trim().isEmpty();
-        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
+        boolean cartStatusFilter = cartStatus != null;
 
-        if(cartStatusFilter && customerIdFilter) {
-
+        if (cartStatusFilter && customerIdFilter) {
             cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
-
-        }else if(cartStatusFilter){
-
+        } else if (cartStatusFilter) {
             cart = cartGateway.findAllByStatus(cartStatus);
-
-        }else if(customerIdFilter){
-
+        } else if (customerIdFilter) {
             cart = cartGateway.findAllByCustomerId(customerId);
-
-        }else{
-
+        } else {
             cart = cartGateway.findAll();
-
         }
 
         return cartHelper.convertFluxToMonoPage(cart, page);
-
     }
 
-    public Mono<Page<CartDto>> findCustomerCartsFilter(String customerId, CartStatus cartStatus, Pagination page){
-
+    public Mono<Page<CartDto>> findCustomerCartsFilter(String customerId, CartStatus cartStatus, Pagination page) {
         Flux<Cart> cart;
 
-        boolean cartStatusFilter = cartStatus != null && !String.valueOf(cartStatus).trim().isEmpty();
-
-        if (cartStatusFilter) {
-
+        if (cartStatus != null) {
             cart = cartGateway.findAllByCustomerIdAndStatus(customerId, cartStatus);
-
-        }else{
-
+        } else {
             cart = cartGateway.findAllByCustomerId(customerId);
-
         }
 
         return cartHelper.convertFluxToMonoPage(cart, page);
-
     }
-
 }

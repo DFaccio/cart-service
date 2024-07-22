@@ -17,6 +17,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReservationDto extends Dto implements Serializable {
 
     @NotBlank
@@ -30,4 +31,10 @@ public class ReservationDto extends Dto implements Serializable {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private ReservationStatus status;
 
+    public ReservationDto(String id, String sku, int quantity, ReservationStatus status) {
+        super(id);
+        this.sku = sku;
+        this.quantity = quantity;
+        this.status = status;
+    }
 }
