@@ -38,11 +38,11 @@ public class CartController {
     @Resource
     private CartHelper cartHelper;
 
-    public Mono<CartDto> addProductToCart(String costumertId, ReservationListDto reservationDto) throws ValidationsException {
+    public Mono<CartDto> addProductToCart(String customerId, ReservationListDto reservationDto) throws ValidationsException {
 
-        Optional<Cart> optional = cartGateway.findByCustomerIdAndStatus(costumertId, CartStatus.CREATED);
+        Mono<Cart> optional = cartGateway.findByCustomerIdAndStatus(customerId, CartStatus.CREATED);
 
-        Cart cart = cartBusiness.addProductToCart(optional, costumertId, reservationDto);
+        Cart cart = cartBusiness.addProductToCart(optional, customerId, reservationDto);
 
         cart = cartGateway.save(cart).block();
 
@@ -52,15 +52,15 @@ public class CartController {
 
     }
 
-    public Mono<CartDto> findCustomerCart(String id) throws ValidationsException {
+    public Mono<CartDto> findActiveCartByCustomerId(String customerId) throws ValidationsException {
 
-        Optional<Cart> optional = cartGateway.findById(id);
+        Mono<Cart> optional = cartGateway.findByCustomerIdAndStatus(customerId, CartStatus.CREATED);
 
         Cart cart;
 
-        if(optional.isPresent()){
+        if(optional.blockOptional().isPresent()){
 
-            cart = optional.get();
+            cart = optional.blockOptional().get();
 
         }else{
 
@@ -76,7 +76,7 @@ public class CartController {
 
     public Mono<CartDto> updateCart(CartDto cartDto) throws ValidationsException {
 
-        Optional<Cart> optional = cartGateway.findById(cartDto.getId());
+        Mono<Cart> optional = cartGateway.findById(cartDto.getId());
 
         Cart cart;
 
@@ -94,7 +94,7 @@ public class CartController {
 
         List<String> reservationIds;
 
-        Optional<Cart> optional = cartGateway.findById(cartId);
+        Mono<Cart> optional = cartGateway.findById(cartId);
 
         Cart cart;
 
@@ -116,7 +116,7 @@ public class CartController {
 
         List<String> reservationIds;
 
-        Optional<Cart> optional = cartGateway.findById(cartId);
+        Mono<Cart> optional = cartGateway.findById(cartId);
 
         Cart cart;
 

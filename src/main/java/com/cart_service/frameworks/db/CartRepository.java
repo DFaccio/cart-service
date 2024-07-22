@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 public interface CartRepository extends ReactiveMongoRepository<Cart, String> {
 
     @Query(value="{$and: [{'customerId':{$eq:?0}},{'cartStatus':{$eq:?1}}]}")
-    Optional<Cart> findByCustomerIdAndStatus(String customerId, CartStatus cartStatus);
+    Mono<Cart> findByCustomerIdAndStatus(String customerId, CartStatus cartStatus);
 
     @Query(value="{'customerId':{$eq:?0}")
     Flux<Cart> findAllByCustomerId(String customerId);

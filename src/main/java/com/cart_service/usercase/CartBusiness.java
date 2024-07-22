@@ -15,6 +15,7 @@ import com.cart_service.util.exceptions.ValidationsException;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,17 +28,17 @@ public class CartBusiness {
     @Resource
     private CartHelper cartHelper;
 
-    public Cart addProductToCart(Optional<Cart> optional, String costumertId, ReservationListDto reservationDto) throws ValidationsException {
+    public Cart addProductToCart(Mono<Cart> optional, String customerId, ReservationListDto reservationDto) throws ValidationsException {
 
         Cart cart;
 
-        if (optional.isPresent()) {
+        if (optional.blockOptional().isPresent()) {
 
-            cart = addProduct(optional.get(), reservationDto);
+            cart = addProduct(optional.blockOptional().get(), reservationDto);
 
         } else {
 
-            cart = createCart(costumertId, reservationDto);
+            cart = createCart(customerId, reservationDto);
 
         }
 
@@ -45,7 +46,7 @@ public class CartBusiness {
 
     }
 
-    public Cart createCart(String costumertId, ReservationListDto reservationListDto) throws ValidationsException {
+    public Cart createCart(String customerId, ReservationListDto reservationListDto) throws ValidationsException {
 
         Cart cart = new Cart();
         List<ProductReservation> productReservationList = new ArrayList<>();
@@ -92,7 +93,7 @@ public class CartBusiness {
         if (hasReservation) {
 
             cart.setProductReservation(productReservationList);
-            cart.setCustomerId(costumertId);
+            cart.setCustomerId(customerId);
             cart.setProductsQuantity(calculateProductsQuantity(productReservationList));
             cart.setCartValue(calculateCartValue(productReservationList));
             cart.setCreationDate(LocalDateTime.now());
@@ -221,13 +222,13 @@ public class CartBusiness {
 
     }
 
-    public Cart updateCart(CartDto cartDto, Optional<Cart> optional) throws ValidationsException {
+    public Cart updateCart(CartDto cartDto, Mono<Cart> optional) throws ValidationsException {
 
         Cart cart;
 
-        if(optional.isPresent()){
+        if(optional.blockOptional().isPresent()){
 
-            cart = optional.get();
+            cart = optional.blockOptional().get();
 
         }else{
 
@@ -319,13 +320,13 @@ public class CartBusiness {
 
     }
 
-    public Cart confirm(Optional<Cart> optional) throws ValidationsException {
+    public Cart confirm(Mono<Cart> optional) throws ValidationsException {
 
         Cart cart;
 
-        if(optional.isPresent()){
+        if(optional.blockOptional().isPresent()){
 
-            cart = optional.get();
+            cart = optional.blockOptional().get();
 
         }else{
 
@@ -348,13 +349,13 @@ public class CartBusiness {
 
     }
 
-    public Cart cancel(Optional<Cart> optional) throws ValidationsException {
+    public Cart cancel(Mono<Cart> optional) throws ValidationsException {
 
         Cart cart;
 
-        if(optional.isPresent()){
+        if(optional.blockOptional().isPresent()){
 
-            cart = optional.get();
+            cart = optional.blockOptional().get();
 
         }else{
 

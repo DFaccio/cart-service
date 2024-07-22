@@ -17,7 +17,7 @@ public class CartGateway {
     @Resource
     private CartRepository cartRepository;
 
-    public Optional<Cart> findByCustomerIdAndStatus(String customerId, CartStatus status){
+    public Mono<Cart> findByCustomerIdAndStatus(String customerId, CartStatus status){
 
         return cartRepository.findByCustomerIdAndStatus(customerId, status);
 
@@ -29,9 +29,9 @@ public class CartGateway {
 
     }
 
-    public Optional<Cart> findById(String id){
+    public Mono<Cart> findById(String id){
 
-        return cartRepository.findById(id).blockOptional();
+        return cartRepository.findById(id);
 
     }
 

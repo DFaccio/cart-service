@@ -24,16 +24,17 @@ public class CartWeb {
     private CartController cartController;
 
     @Operation(summary = "Adiciona um produto ao carrinho")
-    @PostMapping(value = "/add-product/{costumertId}")
-    public Mono<CartDto> addProductToCart(@PathVariable String costumertId,
-                             @Valid @RequestBody ReservationListDto reservationDto) throws ValidationsException {
+    @PostMapping(value = "/add-product")
+    public Mono<CartDto> addProductToCart(@Parameter(description = "ID do usuário", example = "123456")
+                                              @RequestParam("customerId") String customerId,
+                                          @Valid @RequestBody ReservationListDto reservationDto) throws ValidationsException {
 
-        return cartController.addProductToCart(costumertId, reservationDto);
+        return cartController.addProductToCart(customerId, reservationDto);
 
     }
 
     @Operation(summary = "Atualiza um ou mais produtos de um carrinho")
-    @PostMapping(value = "/updateCart")
+    @PostMapping(value = "/update-cart")
     public Mono<CartDto> updateCart(@Valid @RequestBody CartDto cartDto) throws ValidationsException {
 
         return cartController.updateCart(cartDto);
@@ -41,31 +42,34 @@ public class CartWeb {
     }
 
     @Operation(summary = "Consulta um carrinho")
-    @GetMapping(value = "/findCustomerCart/{id}", consumes = "application/json", produces = "application/json")
-    public Mono<CartDto> findCustomerCart(@PathVariable String id) throws ValidationsException {
+    @GetMapping(value = "/find-active-customer-cart", produces = "application/json")
+    public Mono<CartDto> findActiveCartByCustomerId(@Parameter(description = "ID do usuário", example = "123456")
+                                                        @RequestParam("customerId") String customerId) throws ValidationsException {
 
-        return cartController.findCustomerCart(id);
+        return cartController.findActiveCartByCustomerId(customerId);
 
     }
 
     @Operation(summary = "Finaliza um carrinho")
-    @PutMapping(value = "/confirm/{id}", consumes = "application/json", produces = "application/json")
-    public Mono<CartDto> confirm(@PathVariable String id) throws ValidationsException {
+    @PutMapping(value = "/confirm-cart", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> confirm(@Parameter(description = "ID do carrinho", example = "123456")
+                                     @RequestParam("cartId") String cartId) throws ValidationsException {
 
-        return cartController.confirm(id);
+        return cartController.confirm(cartId);
 
     }
 
     @Operation(summary = "Cancela um carrinho")
-    @PutMapping(value = "/cancel/{id}", consumes = "application/json", produces = "application/json")
-    public Mono<CartDto> cancel(@PathVariable String id) throws ValidationsException {
+    @PutMapping(value = "/cancel-cart", consumes = "application/json", produces = "application/json")
+    public Mono<CartDto> cancel(@Parameter(description = "ID do carrinho", example = "123456")
+                                    @RequestParam("cartId") String cartId) throws ValidationsException {
 
-        return cartController.cancel(id);
+        return cartController.cancel(cartId);
 
     }
 
     @Operation(summary = "Busca todos os carrinhos")
-    @GetMapping(value="/findAllCarts")
+    @GetMapping(value="/admin/find-carts", produces = "application/json")
     public Mono<Page<CartDto>> findAllCarts(
             @Parameter(description = "ID do usuário", example = "123456")
             @RequestParam(required = false) String customerId,
@@ -81,7 +85,7 @@ public class CartWeb {
     }
 
     @Operation(summary = "Busca carrinhos, podendo filtrar por usuário e status")
-    @GetMapping(value="/findCustomerCartsFilter")
+    @GetMapping(value="/find-carts", produces = "application/json")
     public Mono<Page<CartDto>> findCustomerCartsFilter(
             @Parameter(description = "ID do usuário", example = "123456")
             @RequestParam(required = true) String customerId,
