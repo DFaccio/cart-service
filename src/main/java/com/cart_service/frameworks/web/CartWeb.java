@@ -34,7 +34,7 @@ public class CartWeb {
     }
 
     @Operation(summary = "Atualiza um ou mais produtos de um carrinho")
-    @PostMapping(value = "/update-cart")
+    @PutMapping(value = "/update-cart")
     public Mono<CartDto> updateCart(@Valid @RequestBody CartDto cartDto) throws ValidationsException, IOException {
         return cartController.updateCart(cartDto);
     }
