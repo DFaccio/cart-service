@@ -59,9 +59,7 @@ public class CartController {
 
         Cart cart = optional.blockOptional().get();
 
-        Cart finalCart = cart;
-
-        return Mono.fromCallable(() -> cartPresenter.convert(finalCart));
+        return Mono.fromCallable(() -> cartPresenter.convert(cart));
     }
 
     public Mono<CartDto> updateCart(CartDto cartDto) throws ValidationsException, IOException {

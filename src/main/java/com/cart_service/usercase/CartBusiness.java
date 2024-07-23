@@ -14,15 +14,13 @@ import com.cart_service.util.enums.ReservationStatus;
 import com.cart_service.util.exceptions.ValidationsException;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -66,7 +64,7 @@ public class CartBusiness {
         Cart cart = new Cart();
 
         List<ProductReservation> productReservationList = new ArrayList<>();
-        reservationListDto = cartHelper.createReservation(reservationListDto);
+        reservationListDto = cartHelper.createReservation(validateReservationDto(reservationListDto));
 
         for (ReservationDto reservationDto : reservationListDto.getReservations()) {
             ProductDetails productDetails = createProductDetails(reservationDto);
@@ -94,115 +92,105 @@ public class CartBusiness {
         return cart;
     }
 
-    public Cart addProduct(Cart cart, ReservationListDto reservationListDto) throws ValidationsException, IOException {
-        List<ReservationDto> reservationsDto = reservationListDto.getReservations();
-        List<ProductReservation> reservations = cart.getProductReservation();
+    private ReservationListDto validateReservationDto(ReservationListDto reservationListDto) {
+        Map<String, ReservationDto> reservations = new HashMap<>();
 
+        for (ReservationDto reservation : reservationListDto.getReservations()) {
+            if (reservations.containsKey(reservation.getSku())) {
+                int quantity = reservation.getQuantity() + reservations.get(reservation.getSku()).getQuantity();
+
+                reservations.get(reservation.getSku()).setQuantity(quantity);
+            } else {
+                reservations.put(reservation.getSku(), reservation);
+            }
+        }
+
+        return new ReservationListDto(reservations.values().stream().toList());
+    }
+
+    private List<ReservationDto> getReservationsFromSkuThatAlreadyExist(Cart cart, ReservationListDto reservationListDto) {
+        return reservationListDto.getReservations().stream()
+                .flatMap(reservationDto -> cart.getProductReservation().stream()
+                        .filter(productReservation -> reservationDto.getSku().equals(productReservation.getProductDetails().getSku()))
+                        .map(productReservation -> new ReservationDto(
+                                productReservation.getReservationId(),
+                                productReservation.getProductDetails().getSku(),
+                                reservationDto.getQuantity(),
+                                null
+                        ))
+                )
+                .collect(Collectors.toList());
+    }
+
+    public Cart addProduct(Cart cart, ReservationListDto reservationListDto) throws ValidationsException, IOException {
         if (!CartStatus.CREATED.equals(cart.getCartStatus())) {
             throw new ValidationsException("0004");
         }
 
-        // TODO estou validando daqui para baixo
+        List<ReservationDto> reservations = validateAndCreateReservationForNewProduct(cart, reservationListDto);
+        List<ProductReservation> productReservationToAdd = new ArrayList<>();
 
-        List<ReservationDto> reservationsToMake = new ArrayList<>();
-        boolean makeReservation = false;
+        for (ReservationDto reservation : reservations) {
+            boolean skuExist = false;
 
-        for (ProductReservation productReservation : reservations) {
+            for (ProductReservation productReservation : cart.getProductReservation()) {
+                if (reservation.getSku().equals(productReservation.getProductDetails().getSku())) {
+                    skuExist = true;
 
-            String cartSku = productReservation.getProductDetails().getSku();
-
-            for (ReservationDto reservationDto : reservationsDto) {
-
-                String sku = reservationDto.getSku();
-
-                if (StringUtils.equals(cartSku, sku)) {
-
-                    ProductDetails productDetails = productReservation.getProductDetails();
-
-                    reservationDto.setId(productReservation.getReservationId());
-
-                    int quantity = productReservation.getProductDetails().getQuantity() + reservationDto.getQuantity();
-                    double productValue = productReservation.getProductDetails().getPrice();
-
-                    reservationDto.setQuantity(quantity);
-
-                    reservationDto = cartHelper.updateReservation(reservationDto);
-
-                    ReservationStatus reservationStatus = reservationDto.getStatus();
-
-                    productDetails.setStatus(reservationStatus);
-
-                    productDetails.setTotal(calculateProductValue(quantity, productValue, reservationStatus));
-
-                    if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
-
-                        productDetails.setQuantity(quantity);
-                    }
-
-                    productReservation.setProductDetails(productDetails);
-
-                } else {
-
-                    makeReservation = true;
-                    reservationsToMake.add(reservationDto);
-
+                    productReservation.getProductDetails().setStatus(reservation.getStatus());
+                    productReservation.getProductDetails().setQuantity(reservation.getQuantity());
+                    productReservation.getProductDetails().setTotal(
+                            calculateProductValue(reservation.getQuantity(),
+                                    productReservation.getProductDetails().getPrice(),
+                                    reservation.getStatus())
+                    );
                 }
-
             }
 
-        }
+            if (!skuExist) {
+                ProductDetails productDetails = createProductDetails(reservation);
+                ProductReservation productReservation = createReservationDetails(reservation.getId(), productDetails);
 
-        if (makeReservation) {
-
-            ReservationListDto makeReservationList = new ReservationListDto();
-
-            makeReservationList.setReservations(reservationsToMake);
-
-            makeReservationList = cartHelper.createReservation(makeReservationList);
-
-            for (ReservationDto reservationDto : makeReservationList.getReservations()) {
-
-                ProductDetails productDetails = new ProductDetails();
-                ProductReservation productReservation = new ProductReservation();
-
-                ProductDto productDto = cartHelper.getProduct(reservationDto.getSku());
-
-                int quantity = reservationDto.getQuantity();
-                double productValue = productDto.getValue();
-                ReservationStatus reservationStatus = reservationDto.getStatus();
-
-                productDetails.setSku(productDto.getCategoryInformationDto().getAvailabilityDto().getSku());
-                productDetails.setName(productDto.getCategoryInformationDto().getName());
-                productDetails.setPrice(productValue);
-                productDetails.setQuantity(quantity);
-                productDetails.setStatus(reservationStatus);
-                productDetails.setTotal(calculateProductValue(quantity, productValue, reservationStatus));
-
-                if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.READY.toString())) {
-
-                    productReservation.setReservationId(reservationDto.getId());
-
-
-                } else if (StringUtils.equals(reservationStatus.toString(), ReservationStatus.STOCKOUT.toString())) {
-
-                    productDetails.setTotal(0.0);
-
-                }
-
-                productReservation.setProductDetails(productDetails);
-                reservations.add(productReservation);
-
+                productReservationToAdd.add(productReservation);
             }
-
         }
 
-        cart.setProductReservation(reservations);
-        cart.setProductsQuantity(calculateProductsQuantity(reservations));
-        cart.setCartValue(calculateCartValue(reservations));
+        cart.getProductReservation().addAll(productReservationToAdd);
+
+        cart.setProductsQuantity(calculateProductsQuantity(cart.getProductReservation()));
+        cart.setCartValue(calculateCartValue(cart.getProductReservation()));
         cart.setUpdateDate(LocalDateTime.now());
 
         return cart;
+    }
 
+    @NotNull
+    private List<ReservationDto> validateAndCreateReservationForNewProduct(Cart cart, ReservationListDto reservationListDto) throws IOException {
+        reservationListDto = validateReservationDto(reservationListDto);
+
+        List<ReservationDto> toUpdate = getReservationsFromSkuThatAlreadyExist(cart, reservationListDto);
+
+        for (int i = 0; i < toUpdate.size(); i++) {
+            toUpdate.set(i, cartHelper.updateReservation(toUpdate.get(i)));
+        }
+
+        if (!toUpdate.isEmpty()) {
+            List<String> skus = toUpdate.stream()
+                    .map(ReservationDto::getSku)
+                    .toList();
+
+            List<ReservationDto> toCreate = reservationListDto.getReservations().stream()
+                    .filter(reservationDto -> !skus.contains(reservationDto.getSku()))
+                    .toList();
+
+            reservationListDto.setReservations(toCreate);
+        }
+
+        ReservationListDto created = cartHelper.createReservation(reservationListDto);
+
+        toUpdate.addAll(created.getReservations());
+
+        return toUpdate;
     }
 
     public Cart updateCart(CartDto cartDto, Mono<Cart> optional) throws ValidationsException, IOException {
